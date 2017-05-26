@@ -1,0 +1,601 @@
+
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB1');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB1 AS
+	select a.*
+			,SETNZP01..REPLACE(complaint_desc,First_Name,'[N]') as Complaint_Desc_Scrub1
+	from DB_COMPLAINTS_DATASET a
+		
+	--limit 10000
+distribute ON Random;
+　
+select * from DB_COMPLAINTS_DATASET_SCRUB1 limit 1000;
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB2');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB2 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+,a.FIRST_NAME
+,a.LAST_NAME
+--,a.COMPLAINT_DESC_SCRUB1
+
+			,SETNZP01..REPLACE(Complaint_Desc_Scrub1,Last_Name,'[]') as Complaint_Desc_Scrub2
+	from DB_COMPLAINTS_DATASET_SCRUB1 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB3');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB3 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub2,'(\d)(\d)(\d)(\d)(\d)(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub3
+,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub3,'(\d)(\d)(\d)(\d)(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub4
+
+	from DB_COMPLAINTS_DATASET_SCRUB2 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB4');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB4 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub4,'(\d)(\d)(\d)(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub5
+	from DB_COMPLAINTS_DATASET_SCRUB3 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB5');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB5 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub5,'(\d)(\d)(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub6
+	from DB_COMPLAINTS_DATASET_SCRUB4 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB6');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB6 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub6,'(\d)(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub7
+	from DB_COMPLAINTS_DATASET_SCRUB5 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB7');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB7 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub7,'(\d)(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub8
+--			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub8,'(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub9
+	from DB_COMPLAINTS_DATASET_SCRUB6 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB8');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB8 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub8,'(\d)(\d)(\d)', '[]')	as Complaint_Desc_Scrub9
+	from DB_COMPLAINTS_DATASET_SCRUB7 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB1');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB2');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB3');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB4');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB5');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB6');
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB7');
+　
+select * from DB_COMPLAINTS_DATASET_SCRUB8 limit 1000;
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB9');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB9 AS
+　
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+--,a.Complaint_Desc_Scrub9
+			--,SETNZP01..REPLACE(Complaint_Desc_Scrub9,' INS ',' INSURED ') as Complaint_Desc_Scrub10
+			,SETNZP01..REPLACE(
+				SETNZP01..REPLACE(
+					SETNZP01..REPLACE(
+						SETNZP01..REPLACE(
+							SETNZP01..REPLACE(
+								SETNZP01..REPLACE(
+									SETNZP01..REPLACE(
+										SETNZP01..REPLACE(
+											SETNZP01..REPLACE(
+												SETNZP01..REPLACE(
+													SETNZP01..REPLACE(
+														SETNZP01..REPLACE(
+															SETNZP01..REPLACE(
+																SETNZP01..REPLACE(
+																	SETNZP01..REPLACE(
+																		SETNZP01..REPLACE(
+																			SETNZP01..REPLACE(
+																				SETNZP01..REPLACE(
+																					SETNZP01..REPLACE(
+																						SETNZP01..REPLACE(Complaint_Desc_Scrub9
+																							,' INS ',' INSURED ')
+																							,' IO ',' INSURED OWNER ') 
+																							,' CANC ',' CANCELLATION ') 
+																							,' CANX ',' CANCELLATION ') 
+																							,' SI ',' SUM INSURED ') 
+																							,' AF ',' AT FAULT ') 
+																							,' TL ',' TOTAL LOSS ') 
+																							,' RESTORX ',' RESTORATION ') 
+																							,' PBTM ',' PAY BY THE MONTH ') 
+																							,' TFT ',' THIRD PARTY FIRE & THEFT ')
+																							,' QTE ',' QUOTE ')
+																							,' QTES ',' QUOTES ')
+																							,' COM ',' COMPREHENSIVE ')
+																							,' BLD ',' BUILDING ')
+																							,' PREM ',' PREMIUM ')
+																							,' TPI ',' THIRD PARTY INSURER ')
+																							,' IV ',' INSURED VEHICLE ')
+																							,' IB ',' INTERNET BANKING ')
+																							,' IVR ',' INSURED VEHICLE REPAIR ')
+																							,' MTGE ',' MORTGAGE ')
+																								as Complaint_Desc_Scrub10
+	from DB_COMPLAINTS_DATASET_SCRUB8 a
+	--limit 1000
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB10');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB10 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub10,'([[:digit:]]+)-([[:digit:]])', '[]')	as Complaint_Desc_Scrub11
+	from DB_COMPLAINTS_DATASET_SCRUB9 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB11');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB11 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub11,'([[:digit:]]+)/([[:digit:]])', '[]')	as Complaint_Desc_Scrub12
+	from DB_COMPLAINTS_DATASET_SCRUB10 a
+distribute ON Random; 
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB12');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB12 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+			,SETNZP01..REGEXP_REPLACE(Complaint_Desc_Scrub12,'([[:digit:]]+)\.([[:digit:]])', '[]')	as Complaint_Desc_Scrub13
+	from DB_COMPLAINTS_DATASET_SCRUB11 a
+distribute ON Random; 
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB13');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB13 AS
+	select a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+,SETNZP01..REPLACE(
+	SETNZP01..REPLACE(
+		SETNZP01..REPLACE(
+			SETNZP01..REPLACE(
+				SETNZP01..REPLACE(
+					SETNZP01..REPLACE(
+						SETNZP01..REPLACE(
+							SETNZP01..REPLACE(
+								SETNZP01..REPLACE(
+									SETNZP01..REPLACE(
+										SETNZP01..REPLACE(
+											SETNZP01..REPLACE(
+												SETNZP01..REPLACE(
+													SETNZP01..REPLACE(
+														SETNZP01..REPLACE(
+															SETNZP01..REPLACE(
+																SETNZP01..REPLACE(
+																	SETNZP01..REPLACE(
+																		SETNZP01..REPLACE(
+																			SETNZP01..REPLACE(
+																				SETNZP01..REPLACE(
+																					SETNZP01..REPLACE(
+																						SETNZP01..REPLACE(
+																							SETNZP01..REPLACE(
+																								Complaint_Desc_Scrub13
+																								,'JANUARY','[]')
+																								,'FEBRUARY','[]')
+																								,'MARCH','[]')
+																								,'APRIL','[]')
+																								,'MAY','[]')
+																								,'JUNE','[]')
+																								,'JULY','[]')
+																								,'AUGUST','[]')
+																								,'SEPTEMBER','[]')
+																								,'OCTOBER','[]')
+																								,'NOVEMBER','[]')
+																								,'DECEMBER','[]')
+																								,'JAN','[]')
+																								,'FEB','[]')
+																								,'MAR','[]')
+																								,'APR','[]')
+																								,'MAY','[]')
+																								,'JUN','[]')
+																								,'JUL','[]')
+																								,'AUG','[]')
+																								,'SEP','[]')
+																								,'OCT','[]')
+																								,'NOV','[]')
+																								,'DEC','[]')
+																								as Complaint_Desc_Scrub14
+from DB_COMPLAINTS_DATASET_SCRUB12 a
+distribute ON Random; 
+　
+　
+select brth.brth_date
+		,a.*
+from DB_COMPLAINTS_DATASET_SCRUB13 a
+left join 
+	(
+		select cust_num, max(brth_date) as brth_date 
+		from INSNZP01_CL..DIM_CUST_BRAND_CUST
+		group by 1
+	) brth
+	on a.CUSTOMER_KEY = brth.cust_num
+limit 100;
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUB14');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUB14 AS
+　
+select 	a.CUSTOMER_KEY
+,a.COMPLAINT_KEY
+,a.SOURCE_SYSTEM_KEY
+,a.COMPLAINT_MADE_CAL_KEY
+,a.COMPLAINT_LEVEL_KEY
+,a.COMPLAINT_STATUS_KEY
+,a.COMPLAINT_CHANNEL_KEY
+,a.COMPLAINT_LEVEL_DESC
+,a.COMPLAINT_REFERENCE_NUMBER
+,a.COMPLAINT_REFERENCE_TYPE_DESC
+,a.COMPLAINT_PRODUCT
+,a.COMPLAINT_BRAND
+,a.BUSINESS_UNIT_NAME
+,a.TARGET_LOB
+		,SETNZP01..REGEXP_REPLACE(a.Complaint_Desc_Scrub14,'[[:graph:]]+@[[:graph:]]+','[]') as Complaint_Desc_Scrub15
+from DB_COMPLAINTS_DATASET_SCRUB13 a
+--where SETNZP01..REGEXP_LIKE(Complaint_Desc_Scrub14,'@+')
+--where SETNZP01..REGEXP_LIKE(Complaint_Desc_Scrub14,'[[:graph:]]+@[[:graph:]]+')
+distribute ON Random; 
+　
+limit 100;
+　
+　
+add CLV band
+add age, age group
+add mosaic segment
+connected status at time of complaint
+connected status 3 months on etc
+　
+select * 
+from SDSNZP01_CUST..EVENT_C2P_ALL_EVER
+where cust_num in (12206602,10045796);
+　
+select *
+from DB_COMPLAINTS_DATASET_SCRUB14
+where customer_key in (12206602,10045796);
+　
+get all ever (only customers that are in complaints list)
+join complaints to all ever by customer 
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_SCRUBBED');
+CREATE TABLE DB_COMPLAINTS_DATASET_SCRUBBED AS
+　
+select a.*
+		,date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')) as Complaint_Date
+		,s1.Needs_Met_S1
+		,s1.Products_S1
+		,s2.Needs_Met_S2
+		,s2.Products_S2
+		,pc.Products_Closed
+		,clv.C2P_CUST_PROFIT_ANN
+		,case when mos.HSHLD_INCOME in (1,2,3,4,5) then 'low'
+				when mos.HSHLD_INCOME = 6 then 'middle'
+				when mos.HSHLD_INCOME = 7 then 'high'
+				else 'unknown' end as wealth_band
+　
+		,floor((date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE)) / 365.25) as Age_Years
+		,case 	when (date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE))/365.25 >= 18 and (date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE))/365.25 < 30 then '1. 18-29yrs'
+					when (date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE))/365.25  >= 30 and (date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE))/365.25 < 50 then '2. 30-49yrs'
+					when (date(date(to_char(a.COMPLAINT_MADE_CAL_KEY,'99999999')))-date(brth.BRTH_DATE))/365.25 >= 50 then '3. 50+yrs'
+					else '4. Unknown' end as age_group
+　
+		,case when wealth_band = 'high' then 'Premium'
+				when wealth_band = 'middle' and age_group = '1. 18-29yrs' then 'Young Lifestyle'
+				when wealth_band = 'middle' and age_group = '2. 30-49yrs' then 'Wealth Builders'
+				when wealth_band = 'middle' and age_group = '3. 50+yrs' then 'Mature Lifestyle'
+				when wealth_band = 'low' and age_group = '1. 18-29yrs' then 'Young Establishers'
+				when wealth_band = 'low' and age_group = '2. 30-49yrs' then 'Everyday Builders'
+				when wealth_band = 'low' and age_group = '3. 50+yrs' then 'Mature Consolidators'
+				else 'Unknown' end as segment
+　
+　
+from DB_COMPLAINTS_DATASET_SCRUB14 a
+left join 
+	(
+		select a.cust_num
+				,b.COMPLAINT_MADE_CAL_KEY
+				,b.Complaint_key
+				,date(to_char(b.COMPLAINT_MADE_CAL_KEY,'99999999')) as Complaint_Date
+				,count(distinct a.CONNECT_NEED_TYPE) as Needs_Met_S1
+				,count(distinct a.PRDT_HOLDNG_NUM) as Products_S1
+		--		,a.Start_Date
+		--		,a.End_Date
+		from SDSNZP01_CUST..EVENT_C2P_ALL_EVER a
+		inner join DB_COMPLAINTS_DATASET_SCRUB14 b
+			on a.cust_num=b.customer_key
+		where Complaint_Date >= a.Start_Date
+		and Complaint_Date <= a.End_Date
+		group by 1,2,3
+	) s1
+	on a.customer_key=s1.cust_num
+	and a.Complaint_key=s1.Complaint_key
+	and a.COMPLAINT_MADE_CAL_KEY=s1.COMPLAINT_MADE_CAL_KEY
+	
+left join 
+	(
+		select a.cust_num
+				,b.COMPLAINT_MADE_CAL_KEY
+				,b.Complaint_key
+				,date(to_char(b.COMPLAINT_MADE_CAL_KEY,'99999999')) as Complaint_Date
+				,count(distinct a.PRDT_HOLDNG_NUM) as Products_Closed
+		--		,a.Start_Date
+		--		,a.End_Date
+		from SDSNZP01_CUST..EVENT_C2P_ALL_EVER a
+		inner join DB_COMPLAINTS_DATASET_SCRUB14 b
+			on a.cust_num=b.customer_key
+		where Complaint_Date >= a.Start_Date
+		and Complaint_Date <= a.End_Date
+		and a.End_Date <= Complaint_Date + 183
+		group by 1,2,3
+	) pc
+	on a.customer_key=pc.cust_num
+	and a.Complaint_key=pc.Complaint_key
+	and a.COMPLAINT_MADE_CAL_KEY=pc.COMPLAINT_MADE_CAL_KEY	
+	
+left join 
+	(
+		select a.cust_num
+				,b.COMPLAINT_MADE_CAL_KEY
+				,b.Complaint_key
+				,date(to_char(b.COMPLAINT_MADE_CAL_KEY,'99999999')) as Complaint_Date
+				,count(distinct a.CONNECT_NEED_TYPE) as Needs_Met_S2
+				,count(distinct a.PRDT_HOLDNG_NUM) as Products_S2
+		--		,a.Start_Date
+		--		,a.End_Date
+		from SDSNZP01_CUST..EVENT_C2P_ALL_EVER a
+		inner join DB_COMPLAINTS_DATASET_SCRUB14 b
+			on a.cust_num=b.customer_key
+		where Complaint_Date >= a.Start_Date
+		and Complaint_Date <= a.End_Date
+		and a.End_Date > Complaint_Date + 183
+		group by 1,2,3
+	) s2
+	on a.customer_key=s2.cust_num
+	and a.Complaint_key=s2.Complaint_key
+	and a.COMPLAINT_MADE_CAL_KEY=s2.COMPLAINT_MADE_CAL_KEY
+	
+left join 
+	(
+		select a.cust_num
+			,sum(a.C2P_PROFIT) as C2P_CUST_PROFIT
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active) - (c2p_nic + c2p_overhead) * (365/a.Num_Days_Active) - (c2p_ind_acq + c2p_dir_acq)) as C2P_CUST_PROFIT_ANN 
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active)) as C2P_CUST_REVENUE_ANN 
+		FROM CLV_INT_C2P_PROFIT_TMP a
+		INNER JOIN CLV_C2P_BASE_FULLBASE b
+		on b.cust_num = a.cust_num 
+		and b.prdt_sys_code = a.prdt_sys_code
+		and b.prdt_holdng_num = a.prdt_holdng_num 
+		and b.start_date <= a.start_date
+		and b.end_date >= a.end_date  
+		
+		group by 1
+	) clv
+		on a.customer_key = clv.cust_num 	
+　
+LEFT JOIN
+　
+	(
+		SELECT * FROM 
+		(
+			SELECT	DISTINCT CUST_NUM, DPID
+					,ROW_NUMBER() OVER (PARTITION BY CUST_NUM ORDER BY CDC_EXTRACT_TIMESTAMP  DESC) AS ROW_NUM
+			FROM 	INSNZP01_CL.CLPADM.DIM_CUST_GROUP_CUST_ADDR 
+			WHERE 	ADDR_TYP_CODE in  ('R')
+			
+					
+		) a 
+	WHERE ROW_NUM=1
+	) addr
+	ON		A.customer_key = addr.CUST_NUM
+　
+LEFT JOIN SDSNZP01_MOS..MOS_MOSAIC mos
+	ON		addr.DPID = mos.pid
+　
+left join 
+	(select cust_num, max(brth_date) as brth_date 
+	from INSNZP01_CL..DIM_CUST_BRAND_CUST
+	group by 1
+	) brth
+		on a.customer_key = brth.cust_num
+　
+distribute ON Random; 
+	
+limit 1000;
+　
+DB_COMPLAINTS_DATASET_IPIPHANY
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET_IPIPHANY');
+CREATE TABLE DB_COMPLAINTS_DATASET_IPIPHANY AS
+　
+select
+	source_system_key
+	,case when complaint_brand like '&SUNCORP&' then 'SUNCORP' else complaint_brand end as complaint_brand
+	,complaint_level_key
+	,complaint_level_desc
+	,complaint_channel_key
+	,case when complaint_product in ('MOTOR','CAR') then 'MOTOR'
+			when complaint_product in ('PROPERTY','HOME & CONTENTS') then 'HOME & CONTENTS'
+			when complaint_product = 'CTP' then 'CTP'
+			else 'OTHER' end as complaint_product
+	,complaint_desc_scrub15 as Complaint_desc
+	,Needs_Met_S1 as Needs_Met_at_Complaint
+	,Needs_Met_S2 as Needs_Met_after_Complaint
+	,Products_S1 as Products_At_Complaint
+	,Products_S2 as Products_After_Complaint
+	,Products_Closed
+	,case when Products_Closed >= 1 then 1 else 0 end as Product_Closed_Flag
+	,case when Needs_Met_S1 > Needs_Met_S2 then 1 else 0 end as Dropped_Needs
+	,case when Needs_Met_S1 >= 2 and Needs_Met_S2 < 2 then 1 else 0 end as Disconnected
+	,case when C2P_CUST_PROFIT_ANN < 50 then 'a. <$50'
+			when C2P_CUST_PROFIT_ANN < 2000 then 'b. $50 - $200'
+			else 'c. >$200' end as Customer_Value_Band
+	,Age_Years
+	,Age_Group
+	,Segment
+　
+　
+from DB_COMPLAINTS_DATASET_SCRUBBED
+where needs_met_s1 >= 1
+and complaint_desc_scrub15 is not null
+distribute ON Random; 
