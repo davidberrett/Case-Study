@@ -1,0 +1,819 @@
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('EVENT_BROKERED_TMP1');
+CREATE TABLE EVENT_BROKERED_TMP1 AS
+　
+SELECT	A.*, CHNL_CODE, 
+		COALESCE(CHNL_TYP_CODE, DERIVED_CHANNEL) AS CHNL_TYP_CODE
+		
+FROM	(SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'LOAN_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_LOAN_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'BUS_LOAN_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_BUSINESS_LENDING_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'DEPOSITS_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_DEPOSIT_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'TREASURY_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_TREASURY_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'SUPER_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_SUPERANNUATION_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'MOTOR_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_MOTOR_INSURANCE_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'MARGIN_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_MARGIN_LENDING_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'LIFERISK_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_LIFE_RISK_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'INVESTMENT_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_INVESTMENT_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'HOME_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_HOME_INSURANCE_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'CTP_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_CTP_INSURANCE_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM, 
+				'CCI_PH' AS SOURCE_TABLE, CHNL_ID, NULL AS DERIVED_CHANNEL
+		FROM	SDSNZP01_CFDM..CFD_TCFDD_CCI_LOAN_PH
+		WHERE	EFF_STRT_DATE <= CURRENT_DATE AND
+				EFF_END_DATE  >  CURRENT_DATE
+			UNION ALL
+		SELECT	PRDT_SYS_CODE, PRDT_HOLDNG_NUM,
+		'CARLY_CI_PH' AS SOURCE_TABLE, NULL AS CHNL_ID,
+		CASE
+			WHEN PRDT_BRAND_CODE IN ('RESILIUM', 'VERO') THEN 'INDIRECT'
+			WHEN PRDT_BRAND_CODE = 'AAMI' THEN 'DIRECT'
+			WHEN PRDT_BRAND_CODE = 'GIO' AND CHANNEL_STRUCT1 = 'Resilium' THEN 'INDIRECT'
+			WHEN PRDT_BRAND_CODE = 'GIO' AND CHANNEL_STRUCT1 = 'CI Distribution' AND CHANNEL_STRUCT2 IN ('Commercial Intermediaries', 'International Intermediaries') THEN 'INDIRECT'
+			ELSE 'DIRECT'
+		END AS DERIVED_CHANNEL
+FROM	SDSNZD06..FCT_CUST_PRODUCT_COMMERCIAL_INSURANCE_PH
+WHERE	TXN_INFORCE_IND = 1
+		) A
+	LEFT JOIN
+		SDSNZP01_CFDM..CFD_TCFDR_CHANNEL B
+	ON	A.CHNL_ID = B.CHNL_ID
+　
+DISTRIBUTE ON (PRDT_SYS_CODE, PRDT_HOLDNG_NUM);
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('ATTRITION_v2_samp');
+CREATE TABLE ATTRITION_v2_samp AS
+	select * from SDSNZP01_CUST..EVENT_C2P_ALL_EVER
+distribute ON (CUST_NUM); 
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('ATTRITION_v2_a');
+CREATE TABLE ATTRITION_v2_a AS
+select z.*
+		,y.PRDT_DESC as PRDT_CAT_DESC
+		,'2015-07-01' as SNAPSHOT_1_DATE
+		,'2016-07-01' as SNAPSHOT_2_DATE
+　
+from 
+(
+　
+	SELECT a.* 
+			,SOURCE_TABLE
+			,CASE
+			WHEN PRODUCT_CATEGORY1 = 'Lend' AND PRODUCT_CATEGORY2 = 'CC' AND SOURCE_TABLE IS NULL THEN 'DIRECT'
+			WHEN PRODUCT_CATEGORY1 = 'Lend' AND PRODUCT_CATEGORY2 = 'MgnL' AND SOURCE_TABLE IS NULL THEN 'DIRECT'
+			WHEN PRODUCT_CATEGORY1 = 'Dep' AND PRODUCT_CATEGORY2 = 'Merchant' THEN 'DIRECT'
+			WHEN A.PRDT_SYS_CODE IN ('A02', 'OCH', 'N12') THEN 'DIRECT'
+			WHEN BRND_CODE IN ('ASTERON', 'AMP', 'VERO') THEN 'INDIRECT'
+			WHEN A.PRDT_SYS_CODE = 'NIB' THEN 'DIRECT'
+			WHEN SOURCE_TABLE IS NULL THEN 'DIRECT'
+			WHEN CHNL_TYP_CODE = 'UNKNOWN' THEN 'DIRECT'
+			ELSE CHNL_TYP_CODE
+		END AS CHNL_TYP_CODE
+			,case when LOB_CODE = 'Life' then 
+				case when PRODUCT_CATEGORY1 in ('Direct', 'Indirect') then Product_Category1
+					  when PRODUCT_CATEGORY1 = 'Advice' then 'Advised'
+					  end||' '||
+					case when SUB_LOB_CODE = 'Life' then 'Life'
+						when SUB_LOB_CODE = 'SI' then
+						case when PRODUCT_CATEGORY1 = 'Direct' then 'Super' else 'S&amp;I' 
+							end
+						end
+					-- CI wish to split their view by CI/WC/CTP
+					when LOB_CODE = 'CI' then SUB_LOB_CODE
+					else LOB_CODE
+					end AS LOB
+			,case	when LOB_CODE in ('PI','CI') then PRDT_CATEGORY_TYPE
+					when LOB_CODE = 'Bank' then
+						case
+							when PRDT_CATEGORY_TYPE in ('B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B09', 'B10') then PRDT_CATEGORY_TYPE
+							else 'B11'
+						end
+					when LOB_CODE = 'Life' then
+						case 
+							when LOB = 'Direct Life' then
+								case
+									when PRDT_CATEGORY_TYPE in ('L01', 'L02', 'L03', 'L04', 'L05', 'L06', 'L07', 'L10') then PRDT_CATEGORY_TYPE
+									else 'L08'
+								end
+							else PRDT_CATEGORY_TYPE
+						end
+					else 'U99'
+				END AS PRDT_CAT
+	FROM ATTRITION_v2_samp a
+	LEFT JOIN EVENT_BROKERED_TMP1 B
+		ON	A.PRDT_SYS_CODE = B.PRDT_SYS_CODE AND
+		A.PRDT_HOLDNG_NUM = B.PRDT_HOLDNG_NUM
+	--where date(start_date)  >= '2013-01-01'
+) z
+LEFT JOIN
+		-- used in the excel front end so that names are easier to read for a human
+		(SELECT DISTINCT PRDT_CATEGORY_TYPE PRDT_CAT, PRDT_CATEGORY_DESC PRDT_DESC
+		 FROM	SDSNZD06..REF_PRODUCT_DEF) Y
+	ON	z.PRDT_CAT = Y.PRDT_CAT
+distribute ON (CUST_NUM); 
+　
+　
+	
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('ATTRITION_v2_b');
+CREATE TABLE ATTRITION_v2_b AS
+　
+              WITH GRP_STARTS AS   (SELECT CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC,LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE,PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE,CONNECT_NEED_TYPE, START_DATE, END_DATE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM,SNAPSHOT_1_DATE, SNAPSHOT_2_DATE,
+                                                              CASE
+                                                                     WHEN (START_DATE-14) > MAX(END_DATE) OVER (PARTITION BY CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC, LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE,PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE, CONNECT_NEED_TYPE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM,SNAPSHOT_1_DATE, SNAPSHOT_2_DATE ORDER BY START_DATE, END_DATE
+                                                                                                                                  ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING)
+                                                                     THEN 1 ELSE 0
+                                                              END GRP_START
+                                                FROM  ATTRITION_v2_a X )
+                 ,GRPS             AS     (SELECT       CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC, LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE,PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE,CONNECT_NEED_TYPE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM, START_DATE, END_DATE,SNAPSHOT_1_DATE, SNAPSHOT_2_DATE,
+                                                              SUM(GRP_START) OVER (PARTITION BY CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC, LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE ,PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE,CONNECT_NEED_TYPE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM,SNAPSHOT_1_DATE, SNAPSHOT_2_DATE ORDER BY START_DATE, END_DATE) GRP
+                                                FROM  GRP_STARTS)
+              
+              SELECT CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC, LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE, PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE,CONNECT_NEED_TYPE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM,
+				  					SNAPSHOT_1_DATE, SNAPSHOT_2_DATE,
+                           MIN(START_DATE) START_DATE,
+                           MAX(END_DATE) END_DATE
+              FROM   GRPS
+              GROUP BY CUST_NUM,ENTTYP_CODE, LOB,PRDT_CAT_DESC, LOB_CODE,SUB_LOB_CODE, BRND_CODE, PRDT_CATEGORY_DESC,PRDT_CATEGORY_TYPE, PRDT_SYS_CODE,PRODUCT_CATEGORY1,PRODUCT_CATEGORY2,PRODUCT_CATEGORY3,CHNL_TYP_CODE,CONNECT_NEED_TYPE,CONNECT_NEED_DESC,PRDT_HOLDNG_NUM,POL_NUM,SNAPSHOT_1_DATE, SNAPSHOT_2_DATE,  GRP
+　
+DISTRIBUTE ON (CUST_NUM);
+　
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('ATTRITION_v2_c');
+CREATE TABLE ATTRITION_v2_c AS
+　
+	select a.*
+			,case when a.end_date >= a.SNAPSHOT_1_DATE and a.start_date < a.SNAPSHOT_1_DATE then 1 else 0 end as SNAPSHOT_1
+			,case when a.end_date >= a.SNAPSHOT_2_DATE and a.start_date < a.SNAPSHOT_2_DATE then 1 else 0 end as SNAPSHOT_2
+			,c1.Needs_Met_S1
+			,c2.Needs_Met_S2
+			,case when c1.Needs_Met_S1 > 1 then 'Connected' else 'Unconnected' end as Connected_S1
+			,case when c2.Needs_Met_S2 > 1 then 'Connected' else 'Unconnected' end as Connected_S2
+			,case when id1.cust_num is not null then 1 else 0 end as Intermediated_1
+			,case when id2.cust_num is not null then 1 else 0 end as Intermediated_2
+			,case when id1.cust_num is not null and d1.cust_num is not null then 1 else 0 end as Int_Dir_1
+			,case when id2.cust_num is not null and d2.cust_num is not null then 1 else 0 end as Int_Dir_2
+			
+			,date_part('YEAR',a.start_date) as Start_Year
+			,a.ENTTYP_CODE as Entity
+			,a.Start_Date as Temp_Start
+			,case when a.end_date > current_date then floor(months_between(current_date, a.start_date))+1
+					else floor(months_between(a.end_date, a.start_date))+1 end		as Months_to_end
+			,brth.BRTH_DATE
+			,case when a.end_date >= a.SNAPSHOT_1_DATE and a.start_date < a.SNAPSHOT_1_DATE then 1 else 0 end as Start_FLG
+			,case when a.end_date >= a.SNAPSHOT_1_DATE and a.start_date < a.SNAPSHOT_1_DATE
+						and a.end_date >= a.SNAPSHOT_2_DATE then 1 else 0 end as End_FLG
+			,b1.Brand_Needs_Met_S1
+			,b2.Brand_Needs_Met_S2
+			,bc1.Brand_Cnt_S1
+			,bc2.Brand_Cnt_S2
+			,case when bc1.Brand_Cnt_S1 > 1 then 'Multi-brand' else 'Single Brand' end as MultiBrnd_Flg_S1
+			,case when bc2.Brand_Cnt_S2 > 1 then 'Multi-brand' else 'Single Brand' end as MultiBrnd_Flg_S2
+			,bg1.Needs_Met_biggest_brnd_S1
+			,clv.C2P_PROFIT_ANN
+			,clv.C2P_PROFIT
+			,clv2.C2P_CUST_PROFIT_ANN
+			,clv2.C2P_CUST_PROFIT
+			,clv.C2P_REVENUE_ANN
+			,clv2.C2P_CUST_REVENUE_ANN
+			,PRDT1.PRDT_CNT_S1
+			,PRDT2.PRDT_CNT_S2
+			,PRDT3.PRDT_CNT_S3
+			,case when a.start_date >= a.SNAPSHOT_1_DATE then 0
+					when a.end_date >= a.SNAPSHOT_2_DATE then floor((date(a.SNAPSHOT_1_DATE)-date(a.START_DATE)) / 365.25)
+					else floor((date(a.end_date)-date(a.START_DATE)) / 365.25) end as PRDT_TENURE
+					
+			,floor((date(a.SNAPSHOT_1_DATE)-date(Cust_Rel.Earliest_Rel_start_Date)) / 365.25) as Cust_tenure_cur_prd
+			,clm.Claim_FY1415
+			,clm.Claim_FY1516
+			,rd.Renewal_Date
+			,pc.Event_date
+			,pcr.Event_Level
+			,pcr.Event_Detail_1
+			,pcr.Event_Detail_2
+			,pcr.Event_Detail_3
+			,pcr.Event_Detail_4
+			
+			,rpc.Event_date as Event_date_RSK
+			,rpcr.Event_Level as Event_Level_RSK
+			,rpcr.Event_Detail_1 as Event_Detail_1_RSK
+			,rpcr.Event_Detail_2 as Event_Detail_2_RSK
+			,rpcr.Event_Detail_3 as Event_Detail_3_RSK
+			,rpcr.Event_Detail_4 as Event_Detail_4_RSK
+			
+　
+		
+	from ATTRITION_v2_b a
+		
+	left join 
+		(
+		select CUST_NUM
+				,PRDT_HOLDNG_NUM
+				,max(case when CVRG_EXPIRY_DATE between '2015-07-01' and '2016-07-01' then 1 else 0 end) as Claim_FY1516
+				,max(case when CVRG_EXPIRY_DATE between '2014-07-01' and '2015-07-01' then 1 else 0 end) as Claim_FY1415
+		from CB_GI_CLAIMS_LOSS_2CUST_TMPA
+		group by 1,2
+		) clm 
+		on a.CUST_NUM = clm.CUST_NUM 
+		and a.PRDT_HOLDNG_NUM = clm.PRDT_HOLDNG_NUM
+		
+	left join 
+	(
+		select cust_num
+				,min(start_date) as Earliest_Rel_start_Date
+		from ATTRITION_v2_b
+		where end_date >= SNAPSHOT_1_DATE and start_date < SNAPSHOT_1_DATE
+		group by 1
+	) Cust_Rel
+		on a.cust_num = Cust_Rel.cust_num
+		
+	left join 
+	(select cust_num, max(brth_date) as brth_date 
+	from INSNZP01_CL..DIM_CUST_BRAND_CUST
+	group by 1
+	) brth
+		on a.cust_num = brth.cust_num
+	
+	left join 
+	(
+		select cust_num
+				,count(distinct PRDT_HOLDNG_NUM) as PRDT_CNT_S1
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		group by 1
+	) PRDT1
+		on a.cust_num = PRDT1.cust_num
+		
+	left join 
+	(
+		select cust_num
+				,count(distinct POL_NUM) as POL_CNT_S1
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		group by 1
+	) POL1
+		on a.cust_num = POL1.cust_num
+		
+	left join 
+	(
+		select cust_num
+				,count(distinct PRDT_HOLDNG_NUM) as PRDT_CNT_S2
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		group by 1
+	) PRDT2
+		on a.cust_num = PRDT2.cust_num
+		
+	left join 
+	(
+		select cust_num
+				,count(distinct PRDT_HOLDNG_NUM) as PRDT_CNT_S3
+		from ATTRITION_v2_b
+		where end_date >= '2017-05-01'
+		and start_date < '2017-05-01'
+		group by 1
+	) PRDT3
+		on a.cust_num = PRDT3.cust_num
+　
+	left join 
+	(
+		select cust_num
+				,count(distinct POL_NUM) as POL_CNT_S3
+		from ATTRITION_v2_b
+		where end_date >= '2017-05-01'
+		and start_date < '2017-05-01'
+		group by 1
+	) POL3
+		on a.cust_num = POL3.cust_num
+　
+	left join 
+	(
+		select cust_num
+				,count(distinct BRND_CODE) as Brand_Cnt_S1
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		group by 1
+	) bc1
+		on a.cust_num = bc1.cust_num
+	left join 
+	(
+		select cust_num
+				,count(distinct BRND_CODE) as Brand_Cnt_S2
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		group by 1
+	) bc2
+		on a.cust_num = bc2.cust_num
+	left join 
+	(
+		select cust_num
+				,count(distinct CONNECT_NEED_TYPE) as Needs_Met_S1
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		group by 1
+	) c1
+		on a.cust_num = c1.cust_num
+　
+	left join 
+	(
+		select cust_num
+				,count(distinct CONNECT_NEED_TYPE) as Needs_Met_S2
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		group by 1
+	) c2
+		on a.cust_num = c2.cust_num	
+		
+	left join 
+	(
+		select distinct cust_num
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		and CHNL_TYP_CODE = 'DIRECT'	
+	) d1
+		on a.cust_num = d1.cust_num			
+　
+	left join 
+	(
+		select distinct cust_num
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		and CHNL_TYP_CODE = 'DIRECT'	
+	) d2
+		on a.cust_num = d2.cust_num	
+　
+	left join 
+	(
+		select distinct cust_num
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		and CHNL_TYP_CODE = 'INDIRECT'	
+	) id1
+		on a.cust_num = id1.cust_num			
+　
+	left join 
+	(
+		select distinct cust_num
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		and CHNL_TYP_CODE = 'INDIRECT'	
+	) id2
+		on a.cust_num = id2.cust_num	
+		
+　
+left join 
+	(
+		select cust_num
+				,max(Brand_Needs_Met_S1) as Needs_Met_biggest_brnd_S1
+		from 
+		(
+			select cust_num 
+					,BRND_CODE
+					,count(distinct CONNECT_NEED_TYPE) as Brand_Needs_Met_S1
+			from ATTRITION_v2_b
+			where end_date >= '2015-07-01'
+			and start_date < '2015-07-01'
+			group by 1,2
+		) bg11
+		group by 1
+		
+		
+	) bg1
+		on a.cust_num = bg1.cust_num
+　
+left join 
+	(
+		select cust_num 
+				,BRND_CODE
+				,count(distinct CONNECT_NEED_TYPE) as Brand_Needs_Met_S1
+		from ATTRITION_v2_b
+		where end_date >= '2015-07-01'
+		and start_date < '2015-07-01'
+		group by 1,2
+	) b1
+		on a.cust_num = b1.cust_num
+		and a.brnd_code = b1.brnd_code
+　
+	left join 
+	(
+		select cust_num
+				,BRND_CODE
+				,count(distinct CONNECT_NEED_TYPE) as Brand_Needs_Met_S2
+		from ATTRITION_v2_b
+		where end_date >= '2016-07-01'
+		and start_date < '2016-07-01'
+		group by 1,2
+	) b2
+		on a.cust_num = b2.cust_num	
+		and a.brnd_code = b2.brnd_code
+		
+	left join 
+	(
+		select a.cust_num
+			,a.prdt_sys_code
+			,a.prdt_holdng_num
+			,sum(a.C2P_PROFIT) as C2P_PROFIT
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active) - (c2p_nic + c2p_overhead) * (365/a.Num_Days_Active) - (c2p_ind_acq + c2p_dir_acq)) as C2P_PROFIT_ANN 
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active) ) as C2P_REVENUE_ANN 
+		FROM CLV_INT_C2P_PROFIT_TMP a
+		INNER JOIN CLV_C2P_BASE_FULLBASE b
+			on b.cust_num = a.cust_num 
+			and b.prdt_sys_code = a.prdt_sys_code
+			and b.prdt_holdng_num = a.prdt_holdng_num 
+			and b.start_date <= a.start_date
+			and b.end_date >= a.end_date  
+		group by 1,2,3
+	) clv
+		on a.cust_num = clv.cust_num 
+		and a.prdt_sys_code = clv.prdt_sys_code
+		and a.prdt_holdng_num = clv.prdt_holdng_num 
+　
+	left join 
+	(
+		select a.cust_num
+			,sum(a.C2P_PROFIT) as C2P_CUST_PROFIT
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active) - (c2p_nic + c2p_overhead) * (365/a.Num_Days_Active) - (c2p_ind_acq + c2p_dir_acq)) as C2P_CUST_PROFIT_ANN 
+			,sum(a.c2p_revenue * (365/a.Num_Days_Active)) as C2P_CUST_REVENUE_ANN 
+		FROM CLV_INT_C2P_PROFIT_TMP a
+		INNER JOIN CLV_C2P_BASE_FULLBASE b
+		on b.cust_num = a.cust_num 
+		and b.prdt_sys_code = a.prdt_sys_code
+		and b.prdt_holdng_num = a.prdt_holdng_num 
+		and b.start_date <= a.start_date
+		and b.end_date >= a.end_date  
+		
+		group by 1
+	) clv2
+		on a.cust_num = clv2.cust_num 
+		
+	left join 
+	(
+		select PRDT_SYS_CODE
+				,PRDT_HOLDNG_NUM
+				,max(DATE(CVRG_EXPIRY_DATE)) as Renewal_Date 
+		from CB_GI_POLICY_TERMS	
+		where '2015-07-01' <=  DATE(CVRG_EXPIRY_DATE) 
+		and DATE(CVRG_EXPIRY_DATE) < '2016-07-01'
+		group by 1,2
+	) rd
+		on a.PRDT_SYS_CODE=rd.PRDT_SYS_CODE
+		and a.PRDT_HOLDNG_NUM=rd.PRDT_HOLDNG_NUM
+left join 
+(
+	select *
+	from 
+	(
+		select pce.cust_num
+				,pce.prdt_holdng_num
+				,pce.Event_date
+				,pce.Event_ID
+				,pce.Event_Sub_ID
+				,row_number() over(partition by pce.cust_num, pce.prdt_holdng_num order by pce.event_date desc) as rk
+		from 
+		(
+			select * from SDSNZP01_CUST..cave_event_hist
+			where event_id = 78
+			and event_date > '2015-07-01'
+			and event_date <= '2016-07-01'
+			
+			union select * from SDSNZP01_CUST..cave_event_hist
+			where event_id = 79
+			and event_date > '2015-07-01'
+			and event_date <= '2016-07-01'
+			
+			union select * from SDSNZP01_CUST..cave_event_hist
+			where event_id = 80
+			and event_date > '2015-07-01'
+			and event_date <= '2016-07-01'
+			
+			union select * from SDSNZP01_CUST..cave_event_hist
+			where event_id = 81
+			and event_date > '2015-07-01'
+			and event_date <= '2016-07-01'
+		) pce
+	) pce2
+	where pce2.rk=1
+) pc
+	on a.cust_num=pc.cust_num
+	and a.prdt_holdng_num=pc.prdt_holdng_num
+	
+left join SDSNZP01_CUST..EVENT_REFERENCE pcr
+	on pc.event_Id=pcr.event_id
+	and pc.event_sub_id=pcr.event_sub_id
+	
+left join 
+(
+	select *
+	from 
+	(
+		select rpce.cust_num
+				,rpce.prdt_holdng_num
+				,rpce.Event_date
+				,rpce.Event_ID
+				,rpce.Event_Sub_ID
+				,row_number() over(partition by rpce.cust_num, rpce.prdt_holdng_num order by rpce.event_date desc) as rk
+		from 
+		(
+			select * from RISK_PRICE_EVENT_1of16
+			union select * from RISK_PRICE_EVENT_2of16
+			union select * from RISK_PRICE_EVENT_3of16
+			union select * from RISK_PRICE_EVENT_4of16
+			union select * from RISK_PRICE_EVENT_5of16
+			union select * from RISK_PRICE_EVENT_6of16
+			union select * from RISK_PRICE_EVENT_7of16
+			union select * from RISK_PRICE_EVENT_8of16
+			union select * from RISK_PRICE_EVENT_9of16
+			union select * from RISK_PRICE_EVENT_10of16
+			union select * from RISK_PRICE_EVENT_11of16
+			union select * from RISK_PRICE_EVENT_13of16
+			union select * from RISK_PRICE_EVENT_14of16
+			union select * from RISK_PRICE_EVENT_15of16
+			union select * from RISK_PRICE_EVENT_16of16
+		) rpce
+	) rpce2
+	where rpce2.rk=1
+) rpc
+	on a.cust_num=rpc.cust_num
+	and a.prdt_holdng_num=rpc.prdt_holdng_num
+	
+left join SDSNZD06..EVENT_REF_RISK_PRICE_CHANGE rpcr
+	on rpc.event_Id=rpcr.event_id
+	and rpc.event_sub_id=rpcr.event_sub_id
+				
+where a.end_date >= '2015-07-01'
+and a.start_date < '2016-07-01'
+--limit 1000
+DISTRIBUTE ON (CUST_NUM);
+　
+　
+　
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('ATTRITION_v2_d');
+CREATE TABLE ATTRITION_v2_d AS
+　
+WITH ADDR AS
+　
+(
+				SELECT	DISTINCT CUST_NUM, DPID
+						,ROW_NUMBER() OVER (PARTITION BY CUST_NUM ORDER BY CDC_EXTRACT_TIMESTAMP  DESC) AS ROW_NUM
+				FROM 	INSNZP01_CL.CLPADM.DIM_CUST_GROUP_CUST_ADDR 
+				WHERE 	ADDR_TYP_CODE in  ('R')
+			
+					
+	) 
+　
+SELECT	A.*,
+		
+		case 	when C.HSHLD_INCOME = 1 then 'Under $20,799'
+				when C.HSHLD_INCOME = 2 then '$20,800 - $41,599'
+				when C.HSHLD_INCOME = 3 then '$41,600 - $64,999'
+				when C.HSHLD_INCOME = 4 then '$65,000 - $77,999'
+				when C.HSHLD_INCOME = 5 then '$78,000 - $103,999'
+				when C.HSHLD_INCOME = 6 then '$104,000 - $155,999'
+				when C.HSHLD_INCOME = 7 then '$156,000+'
+				when C.HSHLD_INCOME = 8 then 'Unknown' end as income_banding,
+		case 	when C.HSHLD_INCOME in (1,2,3,4,5) then 'low'
+				when C.HSHLD_INCOME = 6 then 'middle'
+				when C.HSHLD_INCOME = 7 then 'high'
+				else 'unknown' end as wealth_band
+				
+		,floor((date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE)) / 365.25) as Age_Years
+		,case 	when (date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE))/365.25 >= 18 and (date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE))/365.25 < 30 then '1. 18-29yrs'
+					when (date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE))/365.25  >= 30 and (date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE))/365.25 < 50 then '2. 30-49yrs'
+					when (date(SNAPSHOT_1_DATE)-date(a.BRTH_DATE))/365.25 >= 50 then '3. 50+yrs'
+					else '4. Unknown' end as age_group
+					
+			,case when a.entity='C' and d.bus_seg_desc is not null then d.bus_seg_desc else 
+				case when wealth_band = 'high' then 'Premium'
+					when wealth_band = 'middle' and age_group = '1. 18-29yrs' then 'Young Lifestyle'
+					when wealth_band = 'middle' and age_group = '2. 30-49yrs' then 'Wealth Builders'
+					when wealth_band = 'middle' and age_group = '3. 50+yrs' then 'Mature Lifestyle'
+					when wealth_band = 'low' and age_group = '1. 18-29yrs' then 'Young Establishers'
+					when wealth_band = 'low' and age_group = '2. 30-49yrs' then 'Everyday Builders'
+					when wealth_band = 'low' and age_group = '3. 50+yrs' then 'Mature Consolidators'
+					else 'Unknown' end 
+				end as segment
+			,case when CLAIM.POLICYNUMBER is not null then 'Yes' else 'No' end as Claim_Ren_Period_old
+			,case when CLAIM2.POLICYNUMBER is not null then 'Yes' else 'No' end as Claim_Ren_Period
+			,case when CLAIM2.POLICYNUMBER is null then 'No claim' 
+					when CLAIM2.LOSS_CAUSE is not null then claim2.LOSS_CAUSE 
+					else 'No claim type' end as Claim_type_Ren_Period
+			,claim2.LOSSDATE as Date_of_last_claim
+			
+			,case when cmp.Complaint_L1_FY1415 = 1 then 'Yes' else 'No' end as Complaint_L1_FY1415
+			,case when cmp.Complaint_L1_FY1516 = 1 then 'Yes' else 'No' end as Complaint_L1_FY1516
+			,case when cmp.Complaint_L1_Ren_Period = 1 then 'Yes' else 'No' end as Complaint_L1_Ren_Period
+			
+			,case when cmp.Complaint_L1_FY1415_NRC = 1 then 'Yes' else 'No' end as Complaint_L1_FY1415_NRC
+			,case when cmp.Complaint_L1_FY1516_NRC = 1 then 'Yes' else 'No' end as Complaint_L1_FY1516_NRC
+			,case when cmp.Complaint_L1_Ren_Period_NRC = 1 then 'Yes' else 'No' end as Complaint_L1_Ren_Period_NRC
+			
+			,voc.Date_Completed as VoC_Date
+			,voc.Response_Q1 as Overall_Satisfaction
+			,voc.Response_Q3 as Claim_Ease
+			,voc.Response_Q4 as Claim_Service
+			
+			,cmp23c.Complaint_Level_Key		
+			,cmp23c.Complaint_Date
+			
+			,case when clm_cmp.POLICYNUMBER is not null then 'Yes' else 'No' end as Claim_Complaint
+			,case when clm_cmp.POLICYNUMBER is not null then 1 else 0 end as Claim_Complaint_flg
+			,case when clm_cmp.Complaint_Level is null then 'No complaint' 
+					when clm_cmp.Complaint_Level = 1 then '1' 
+					when clm_cmp.Complaint_Level = 2 then '2' 
+					when clm_cmp.Complaint_Level = 3 then '3' 
+					when clm_cmp.Complaint_Level = 4 then '4' 
+					end as Claim_Complaint_level
+				
+FROM 	ATTRITION_v2_c A
+　
+LEFT JOIN
+　
+		(SELECT * FROM ADDR WHERE ROW_NUM=1) B
+		
+ON		A.CUST_NUM = B.CUST_NUM
+　
+LEFT JOIN
+　
+		SDSNZP01_MOS..MOS_MOSAIC C
+		
+ON		B.DPID = C.pid
+　
+left join SDSNZP01_CUST..CCL_ENT_ALL_ATTRIBUTES d
+	on a.cust_num=d.cust_num
+	and a.entity='C'
+	
+left join 
+	(
+		select distinct cl.BRND_CDE
+				,cl.POLICYNUMBER
+		from   CB_GI_CLAIMS_LOSS cl
+		left join ATTRITION_v2_c a
+			ON cl.BRND_CDE = a.BRND_CODE 
+			AND cl.POLICYNUMBER = a.POL_NUM 
+			AND a.Renewal_Date - 365  <= cl.LOSSDATE 
+			AND a.Renewal_Date > cl.LOSSDATE 
+			
+	) claim
+	
+	ON CLAIM.BRND_CDE = a.BRND_CODE 
+	AND CLAIM.POLICYNUMBER = a.POL_NUM 
+　
+left join 
+	(
+		select * 
+		from
+		(
+		
+			select cl.BRND_CDE
+					,cl.POLICYNUMBER
+					,cl.loss_cause
+					,cl.lossdate
+					,row_number() over(partition by cl.BRND_CDE, cl.POLICYNUMBER order by cl.lossdate desc) as rk
+　
+			from   DB_GI_CLAIMS_LOSS cl
+			left join ATTRITION_v2_c a
+				ON cl.BRND_CDE = a.BRND_CODE 
+				AND cl.POLICYNUMBER = a.POL_NUM 
+			where a.Renewal_Date - 365  <= cl.LOSSDATE 
+			AND a.Renewal_Date > cl.LOSSDATE 
+		) b
+		where b.rk=1
+	) claim2
+	
+	ON CLAIM2.BRND_CDE = a.BRND_CODE 
+	AND CLAIM2.POLICYNUMBER = a.POL_NUM 
+	
+　
+left join 
+(
+	select c2p.CUST_NUM
+			,c2p.PRDT_SYS_CODE
+			,c2p.POL_NUM
+			,max(case when C.EVENT_DATE between '2015-07-01' and '2016-07-01' then 1 else 0 end) as Complaint_L1_FY1516
+			,max(case when C.EVENT_DATE between '2015-07-01' and '2016-07-01' and c.ComplaintStatus not in ('Resolved By Consultant', 'Open') then 1 else 0 end) as Complaint_L1_FY1516_NRC
+			,max(case when C.EVENT_DATE between '2014-07-01' and '2015-07-01' then 1 else 0 end) as Complaint_L1_FY1415
+			,max(case when C.EVENT_DATE between '2014-07-01' and '2015-07-01' and c.ComplaintStatus not in ('Resolved By Consultant', 'Open') then 1 else 0 end) as Complaint_L1_FY1415_NRC
+			,max(case when C.EVENT_DATE between c2p.start_date and c2p.end_date then 1 else 0 end) as Complaint_L1_Ren_Period
+			,max(case when C.EVENT_DATE between c2p.start_date and c2p.end_date and c.ComplaintStatus not in ('Resolved By Consultant', 'Open') then 1 else 0 end) as Complaint_L1_Ren_Period_NRC
+	FROM  CB_CC_COMPLAINTS_EVENT_TEST_W_STATUS C
+	inner join ATTRITION_v2_c  c2p
+		ON c2p.CUST_NUM = C.CUST_NUM
+		AND c2p.PRDT_SYS_CODE = C.PRDT_SYS_CODE 
+		AND c2p.POL_NUM = C.POL_NUM 
+		
+	group by 1,2,3
+	
+) cmp
+	on a.cust_num=cmp.cust_num
+	and a.PRDT_SYS_CODE=cmp.PRDT_SYS_CODE
+	and a.POL_NUM=cmp.POL_NUM
+	
+left join DB_VOC_RESP voc
+	on a.POL_NUM=voc.POLICY_NUMBER
+	and voc.Date_Completed < '2016-07-01'
+	
+left join 
+(	
+	select *
+	from 
+	(
+		select customer_key as CUST_NUM
+				,complaint_level_key
+				,date(to_char(complaint_made_cal_key,'99999999')) as Complaint_Date
+　
+				,row_number() over(partition by customer_key  order by complaint_level_key desc,  date(to_char(complaint_made_cal_key,'99999999')) desc) as rk
+		from  SDSNZD06_CMM..RPT_FCT_CUSTOMER_COMPLAINT_DAY	 cmp23
+	) cmp23b
+	where cmp23b.rk=1
+) cmp23c
+	on a.CUST_NUM=cmp23c.CUST_NUM
+	and cmp23c.Complaint_Date > a.Renewal_Date - 365
+　
+left join 
+(	
+	select a.POLICYNUMBER
+			,max(case when b.complaint_level_desc = 'FEEDBACK' then 1
+						when b.complaint_level_desc = 'COMPLAINT' then 2
+						when b.complaint_level_desc = 'DISPUTE' then 3
+						when b.complaint_level_desc = 'CEO COMPLAINT' then 4
+						end) as Complaint_Level
+	from CB_GI_CLAIMS_LOSS a
+	left join SDSNZD06_CMM..RPT_DIM_COMPLAINT b
+		on a.claimnumber = b.complaint_reference_NUMBER
+	WHERE B.complaint_reference_type_desc in ('CLAIM NUMBER','CLAIM')
+	group by 1
+) clm_cmp
+	on a.POL_NUM=clm_cmp.POLICYNUMBER
+	
+where start_FLG=1
+--limit 1000
+DISTRIBUTE ON (CUST_NUM);
+　
+　
+　
