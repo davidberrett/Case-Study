@@ -1,0 +1,56 @@
+
+EXEC SDSNZD06..DROP_TABLE_IF_EXISTS('DB_COMPLAINTS_DATASET');
+CREATE TABLE DB_COMPLAINTS_DATASET AS
+　
+select z.*
+		,upper(y.First_Name) as First_Name
+		,upper(y.Last_Name) as Last_Name
+from 
+(
+	select b.*
+			,d.Complaint_Level_Desc
+			,d.Complaint_reference_number
+			,d.Complaint_reference_type_desc
+			,upper(d.Complaint_Desc) as Complaint_Desc
+			,d.Complaint_Product
+			,d.Complaint_Brand
+			,d.Business_Unit_Name
+			,d.Target_LOB
+	from 
+	(
+		select a.Customer_Key
+				,a.Complaint_Key
+				,a.source_system_key
+				,a.Complaint_Made_Cal_Key
+				,a.Complaint_level_Key
+				,a.Complaint_status_Key
+				,a.Complaint_channel_Key
+				,row_number() over(partition by a.Customer_Key, a.Complaint_Key order by a.Complaint_Made_Cal_Key desc) as rk
+		from SDSNZD06_CMM..RPT_FCT_CUSTOMER_COMPLAINT_DAY a
+	) b
+	left join 
+	(
+		select c.Complaint_Level_Desc
+			,c.Complaint_reference_number
+			,c.Complaint_reference_type_desc
+			,c.Complaint_Desc
+			,c.Complaint_Product
+			,c.Complaint_Brand
+			,c.Business_Unit_Name
+			,c.Target_LOB
+			,c.Complaint_Key
+			,row_number() over(partition by c.Complaint_Key order by c.Effective_From desc) as rk2
+			from SDSNZD06_CMM..RPT_DIM_COMPLAINT c
+	) d
+		on b.complaint_key=d.complaint_key
+	where b.rk=1
+	and d.rk2=1
+) z	
+left join SDSNZP01_CFDM..CDI_MCFD_CUSTOMER y
+	on z.customer_key=y.cust_num
+　
+where z.customer_key <>  -9999999999999999999
+and z.Complaint_Made_Cal_Key >= 20150701
+and z.Complaint_Made_Cal_Key < 20160701
+　
+distribute ON (Customer_Key); 
